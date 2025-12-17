@@ -1,33 +1,37 @@
 #!/usr/bin/python3
 import requests
 
+
 def top_ten(subreddit):
-    if subreddit is None or type(subreddit) is not str:
+    """Print the first 10 hot post titles for a given subreddit, else None."""
+    if not isinstance(subreddit, str) or subreddit == "":
         print(None)
         return
 
-    url = f"https://www.reddit.com/r/{subreddit}/hot.json?limit=10"
-
-    headers = {
-        "User-Agent": "MyRedditClient/1.0"
-    }
+    url = f"https://www.reddit.com/r/{subreddit}/hot.json"
+    headers = {"User-Agent": "alche-scripting:api_advanced:v1.0 (by u/yourusername)"}
+    params = {"limit": 10}
 
     try:
-        response = requests.get(
+        res = requests.get(
             url,
             headers=headers,
-            allow_redirects=False
+            params=params,
+            allow_redirects=False,
+            timeout=10
         )
 
-        if response.status_code != 200:
+        if res.status_code != 200:
             print(None)
             return
 
-        data = response.json()
-        posts = data.get("data", {}).get("children", [])
+        payload = res.json()
+        children = payload.get("data", {}).get("children", [])
 
-        for post in posts:
-            print(post.get("data", {}).get("title"))
+        for child in children[:10]:
+            title = child.get("data", {}).get("title")
+            if title is not None:
+                print(title)
 
-    except Exception:
+    except (requests.RequestException, ValueError):
         print(None)
